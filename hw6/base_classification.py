@@ -93,15 +93,20 @@ def evaluate_model(model, dataloader, device):
     # iterate over the dataloader
     for batch in dataloader:
         # TODO: implement the evaluation function
-        raise NotImplementedError("You need to implement the evaluation function")
+
+
+        #raise NotImplementedError("You need to implement the evaluation function")
         # get the input_ids, attention_mask from the batch and put them on the device
         # Hints:
         # - see the getitem function in the BoolQADataset class for how to access the input_ids and attention_mask
         # - use to() to move the tensors to the device
+        input_ids = batch['input_ids'].to(device)
+        attention_mask = batch['attention_mask'].to(device)
 
 
         # forward pass
         # name the output as `output`
+        output = model(input_ids, attention_mask=attention_mask)
 
         # your code ends here
 
@@ -170,28 +175,37 @@ def train(mymodel, num_epochs, train_dataloader, validation_dataloader, test_dat
             """
 
             # TODO: implement the training loop
-            raise NotImplementedError("You need to implement this function")
+
+            # raise NotImplementedError("You need to implement this function")
 
             # get the input_ids, attention_mask, and labels from the batch and put them on the device
             # Hints: similar to the evaluate_model function
-
+            input_ids = batch['input_ids'].to(device)
+            attention_mask = batch['attention_mask'].to(device)
+            labels = batch['labels'].to(device)
 
             # forward pass
             # name the output as `output`
             # Hints: refer to the evaluate_model function on how to get the predictions (logits)
+            output = mymodel(input_ids, attention_mask=attention_mask)
 
 
             # compute the loss using the loss function
+            loss_value = loss(output.logits, labels)
 
 
             # loss backward
+            loss_value.backward()
 
 
             # update the model parameters with optimizer and lr_scheduler step
+            optimizer.step()
 
 
             # zero the gradients
+            optimizer.zero_grad()
 
+            predictions = output.logits
             # your code ends here
 
             predictions = torch.argmax(predictions, dim=1)
@@ -297,10 +311,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--small_subset", action='store_true',
                         help="When set true, only run training on a small subset of the data, used for 3.1.1")
-    parser.add_argument("--num_epochs", type=int, default=1)
+    parser.add_argument("--num_epochs", type=int, default=2)
     parser.add_argument("--lr", type=float, default=5e-5)
     parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--device", type=str, default="mps")
     parser.add_argument("--model", type=str, default="distilbert-base-uncased")
 
     args = parser.parse_args()
